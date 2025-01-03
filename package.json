@@ -8,5 +8,18 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "mariadb": "^3.4.0",
+    "mysql2": "^3.12.0",
+    "oracledb": "^6.7.1",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5",
+    "sqlite3": "^5.1.7",
+    "tedious": "^18.6.1"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^6.6.2"
+  }
 }
