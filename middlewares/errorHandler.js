@@ -7,7 +7,7 @@ module.exports = (err, req, res, next) => {
         return 500;
     }
   };
-  let code = handleCode(err?.name);
+  let code = err.status || handleCode(err?.name);
   let message = err?.message || "Internal Server Error";
 
   const result = {
@@ -18,7 +18,7 @@ module.exports = (err, req, res, next) => {
       data: new Date(),
     },
     data: null,
-    error: err.errors || err,
+    error: err.errors || [err],
   };
   res.status(code).json(result);
 };

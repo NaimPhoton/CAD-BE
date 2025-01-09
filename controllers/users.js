@@ -1,5 +1,6 @@
 const {compare, hashPassword} = require("../helpers/bcrypt");
 const {signToken, verifyToken} = require("../helpers/jwt");
+const {ErrorResponse, SuccessResponse} = require("../helpers/response");
 // const {OAuth2Client} = require("google-auth-library");
 // const enumHelper = require("../helpers/enum");
 // const passport = require("passport");
@@ -11,40 +12,16 @@ class UserController {
   static async login(req, res, next) {
     try {
       const {email, password} = req.body;
-      const payload = {
-        email,
-        password,
-      };
-      const findUser = await User.findOne({where: {email: payload.email}});
+      const findUser = await User.findOne({where: {email}});
 
-      if (!findUser) {
-        throw {status: 401, message: "Invalid email/password"};
-      } else if (!compare(payload.password, findUser.password)) {
-        throw {status: 401, message: "Invalid email/password"};
-      } else {
-        const accessToken = signToken({
-          id: findUser.id,
-          firstName: findUser.firstName,
-          lastName: findUser.lastName,
-          fullName: findUser.fullName,
-          email: findUser.email,
-        });
-
-        const result = {
-          meta: {
-            status: "Success",
-            code: 200,
-            msg: "Successfully Login",
-            data: new Date(),
-          },
-          data: {
-            access_token: accessToken,
-          },
-          error: null,
-        };
-
-        res.status(200).json(result);
+      if (!findUser || !compare(password, findUser.password)) {
+        throw ErrorResponse(401, "Invalid email/password");
       }
+
+      const accessToken = signToken(findUser, "LOGIN");
+      SuccessResponse(res, 200, "Successfully Login", {
+        access_token: accessToken,
+      });
     } catch (error) {
       next(error);
     }
@@ -52,32 +29,20 @@ class UserController {
 
   static async register(req, res, next) {
     try {
-      const {firstName, lastName, email, password} = req.body;
+      const {firstName, lastName, password} = req.body;
 
       const newUser = await User.create(
         {
-          firstName,
-          lastName,
+          ...req.body,
           fullName: firstName + " " + lastName,
-          email,
           password: hashPassword(password),
         },
         {returning: true}
       );
 
-      const result = {
-        meta: {
-          status: "Success",
-          code: 201,
-          msg: "Successfully Create New User",
-          data: new Date(),
-        },
-        data: {
-          ...newUser?.dataValues,
-        },
-        error: null,
-      };
-      res.status(201).json(result);
+      SuccessResponse(res, 201, "Successfully Create New User", {
+        ...newUser?.dataValues,
+      });
     } catch (error) {
       next(error);
     }
@@ -88,27 +53,9 @@ class UserController {
       const {access_token} = req.headers;
 
       const checkUserByToken = verifyToken(access_token);
-      if (!checkUserByToken) {
-        throw {
-          status: 400,
-          message: "Token does not exist",
-        };
-      }
+      if (!checkUserByToken) throw ErrorResponse(400, "Token does not exist");
 
-      const result = {
-        meta: {
-          status: "Success",
-          code: 200,
-          msg: "Successfully Get User",
-          data: new Date(),
-        },
-        data: {
-          ...checkUserByToken,
-        },
-        error: null,
-      };
-
-      res.status(200).json(result);
+      SuccessResponse(res, 200, "Successfully Get User", {...checkUserByToken});
     } catch (error) {
       next(error);
     }
