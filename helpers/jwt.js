@@ -1,9 +1,22 @@
 const jwt = require("jsonwebtoken");
 
-function signToken(payload) {
-  const token = jwt.sign(payload, process.env.SECRET);
+function signToken(payload, type) {
+  switch (type) {
+    case "LOGIN":
+      return jwt.sign(
+        {
+          id: payload.id,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          fullName: payload.fullName,
+          email: payload.email,
+        },
+        process.env.SECRET
+      );
 
-  return token;
+    default:
+      return jwt.sign(payload, process.env.SECRET);
+  }
 }
 
 function verifyToken(token) {

@@ -7,9 +7,9 @@ module.exports = (sequelize, DataTypes) => {
   User.init(
     {
       id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
         allowNull: false,
       },
       firstName: {
@@ -68,6 +68,9 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "User",
+      tableName: "Users", // Explicitly specify the table name
+      timestamps: true, // Enable createdAt and updatedAt
+      paranoid: true, // Enable soft delete (deletedAt)
     }
   );
   return User;
